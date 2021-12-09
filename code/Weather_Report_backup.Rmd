@@ -2,7 +2,7 @@
 title: "Weather Data Report"
 author: "Phil Alderman, Ryan Earp, and Katherine Haile"
 date: "12/2/2021"
-output: html_document
+output: pdf_document
 ---
 
 
