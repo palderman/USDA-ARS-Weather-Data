@@ -156,7 +156,6 @@ wth_data %>% filter(wind_dir_tobs == "?" | wind_dir_tobs == "NE; N?")
 ```
 
 
-
 # Wind Direction for the Day (wind_dir_day)
 |   The column for wind direction for the day was evaluated for errors and some problems were encountered. Though the instructions only called for one direction, many entries have two or more wind directions for the single day. Also, it seems that on some data sheets the only wind direction recorded for the day was in the Wind Direction at Time of Observation column, and the Wind Direction for the Day column includes extra notes related to the State of Weather column by including entries such as snow, thunderstorm, misting, ect. This is a problem that will need to be corrected.
 
