@@ -7,7 +7,7 @@ output: html_document
 
 ## Data Consolidation
 
-  The first task to combine the excel sheets created by the library staff from the paper documents was achieved using an function we created in R. The filename of the document was used as the argument of the function, and the read_excel and read_ods functions were used to assign the file to a temporary dataframe called raw. The raw dataframes were then subsetted to exclude the summary data and column names used in the original documents and clean variable names were assigned to the columns. Due to the variation in characters in some of the numerical columns, these were coerced to a numeric form and the original columns were labeled as such. Columns to record the year, month, observer were assigned to the corresponding cells in the original document. The overall date was also combined and the times for the beginning and ending time of rain events were set as such. Finally, the date was set as the first column and the year, month, and day columns were removed.
+  The first task to combine the excel sheets created by the library staff from the paper documents was achieved using an function we created in R. The file name of the document was used as the argument of the function, and the read_excel and read_ods functions were used to assign the file to a temporary data frame called raw. The raw data frames were then subsetted to exclude the summary data and column names used in the original documents and clean variable names were assigned to the columns. Due to the variation in characters in some of the numerical columns, these were coerced to a numeric form and the original columns were labeled as such. Columns to record the year, month, observer were assigned to the corresponding cells in the original document. The overall date was also combined and the times for the beginning and ending time of rain events were set as such. Finally, the date was set as the first column and the year, month, and day columns were removed.
   This function was then used to read in all of the original files and create a single .csv file. The file names were extracted from the raw data folder and ensured only the correct files were selected. This list was then fed into the read_wth_data function and arranged by date.
 
 ```{r}
@@ -99,12 +99,22 @@ sanitize_month <- function(month){
 ```
                          
 # Wind Direction at Time of Observation (wind_dir_tobs)  
-            
-                 
+  To check for any errors within the wind direction column, the unique function was used to show all unique entries within the column. This resulted in a list that contained variations on how the directions were inputted as capitalization changes would result in a unique entry. Most of these were able to be resolved using code as we could input all the variations and spelling errors and say what it needed to be. This leaves four data entries where the entry is uncertain and will need to be checked.
 
 ```{r wind_dir_tobs}
+unique_wind_dir <- unique(wth_data$wind_dir_tobs)
 
-
+sanitize_wind_dir <- function(wind_dir){
+  clean_wind_dir <- str_replace_all(wind_dir, c("( *\\& *)|( *– *)|( *\\+ *)|(;(?=[^ ]))" = "; ",
+                                                "Wind direction at time of observation" = "W",
+                                                "East" = "E",
+                                                "South" = "S",
+                                                "Sw" = "SW",
+                                                "SS" = "SW",
+                                                "ES" = "SE",
+                                                "Souh" = "S",
+                                                "NR" = "NE"))
+wth_data %>% filter(wind_dir_tobs == "?" | wind_dir_tobs == "NE; N?")
 
 ```
 
@@ -117,12 +127,14 @@ sanitize_month <- function(month){
 
 
 # Weather State at Time of Observation (weather_state_tobs)
-
+  Similarly to the the wind direction, there are several errors within the weather state due to either misspelling or different ways of entering the same data entry. A similar code will need to be developed for the spelling errors identified within in this column. There are seven data entries containing question marks indicating the value is uncertain and will need to be manually checked.
 
 
 ```{r weather_state_tobs}
+unique_weather <- unique(wth_data$weather_state_tobs) 
 
-
+wth_data %>% 
+filter(weather_state_tobs == "Pt????" | weather_state_tobs == "?")
 ```
 
 # Wind Direction for the Day (wind_dir_day)
@@ -136,29 +148,27 @@ sanitize_month <- function(month){
 ```
 
 
-# Maximum Temperature (temp_maximum)
-```{r temp_maximum}
-
+# Maximum and Minimum Temperature (temp_maximum and temp_minimum)
+  When evaluating the minimum and maximum temperature the data frame was first checked for NA values, which resulted 191 observations. These were checked against the original documents, and the majority were the result of missing values in the original data set. However, the months of May through August in 1929 were not recorded at all and will need to be filled in.
+Additionally, the data frame was check to see if any observations had recorded values where the minimum temperature for the day was greater than the maximum temperature for the day. There are 27 observations that fit this, and after some further evaluation, some are the result of errors in the original data set and others from misreading the documents. It is recommended that these are examined individually to determine the proper action needed.
+```{r temp}
+na_temp <- wth_data %>% 
+  filter(is.na(temp_maximum), is.na(temp_minimum))
 ```
 
-
-# Minimum Temperature (temp_minimum)
-```{r temp_minimum}
-
-```
 
 
 # Temperature Range for the Day (temp_range)
-  
+  To check the temperature range column, the dataframe was filtered to include any observations where the range did not equal the maximum minus the minimum temperature. A total of 4340 observations fit this description. No further cleaning was done for this as the error could occur within any of the three columns.
 ```{r temp_range}
+wrong_range <- wth_data %>% 
+  filter(temp_range != temp_maximum - temp_minimum) %>% 
+  mutate(diff =(temp_maximum - temp_minimum)-temp_range) %>% 
+  select(file_path, date, temp_minimum, temp_maximum, temp_range, diff)
 
-```
-
-
-# Temperature Set Max (temp_set_max)
-
-```{r temp_set_max}
-
+wrong_range %>% 
+  ggplot(aes(x = diff))+
+  geom_histogram()
 ```
 
 # Precipitation Amount (precip_amount)
