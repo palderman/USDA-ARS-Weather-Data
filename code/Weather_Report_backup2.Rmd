@@ -2,7 +2,7 @@
 title: "Weather Data Report"
 author: "Phil Alderman, Ryan Earp, and Katherine Haile"
 date: "12/9/2021"
-output: html_document
+output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
@@ -19,7 +19,7 @@ library(tidyverse)
 
 # Data Consolidation
 
-|  The first task to combine the excel sheets created by the library staff from the paper documents was achieved using an function we created in R. The file name of the document was used as the argument of the function, and the read_excel and read_ods functions were used to assign the file to a temporary data frame called raw. The raw data frames were then subset to exclude the summary data and column names used in the original documents and clean variable names were assigned to the columns. Due to the variation in characters in some of the numerical columns, these were coerced to a numeric form and the original columns were labeled as such. Columns to record the year, month, observer were assigned to the corresponding cells in the original document. The overall date was also combined and the times for the beginning and ending time of rain events were set as such. Finally, the date was set as the first column and the year, month, and day columns were removed.
+|  The first task to combine the excel sheets created by the library staff from the paper documents was achieved using a function we created in R. The file name of the document was used as the argument of the function, and the read_excel and read_ods functions were used to assign the file to a temporary data frame called raw. The raw data frames were then subset to exclude the summary data and column names used in the original documents and clean variable names were assigned to the columns. Due to the variation in characters in some of the numerical columns, these were coerced to a numeric form and the original columns were labeled as such. Columns to record the year, month, observer were assigned to the corresponding cells in the original document. The overall date was also combined and the times for the beginning and ending time of rain events were set as such. Finally, the date was set as the first column and the year, month, and day columns were removed.
 |  This function was then used to read in all of the original files and create a single .csv file. The file names were extracted from the raw data folder and ensured only the correct files were selected. This list was then fed into the read_wth_data function and arranged by date.
 
 ```{r import_functions, eval=FALSE, include=FALSE}
@@ -97,6 +97,7 @@ wth_data %>%
 |  Additionally, some errors were reported when trying to read in some of the files. One file had the sheet name labeled as the month and year instead of sheet 1 like the rest, so an exception was needed for this file. Another file had the summary titles in column A repeated in column B so the information collected from this needed to be shifted to the right one. 
 |  After an initial summary of the data set, it was observed that there were several entries were recorded after the year 2000 and others the date was NA. Further investigation found errors that were corrected in code. One file contained the incorrect year in the year cell. Others had varying errors in the month column of the document. This occurred from either misspelling of the month or using a misspelled abbreviation caused the function to incorrectly assign the year.
   |* Note, this section of functions must be run before the import function.
+  
 ```{r fix_errors, eval=FALSE, include=FALSE}
 sanitize_wind_dir <- function(wind_dir){
   clean_wind_dir <- str_replace_all(wind_dir, c("( *\\& *)|( *– *)|( *\\+ *)|(;(?=[^ ]))" = "; ",
@@ -135,17 +136,11 @@ sanitize_month <- function(month){
 
 
 # Other Observations
-|  While going through the dataset, there were several common data entry errors we noticed. For instance, a quotation mark (") implies that the entry is the same as the row above, a dash (-) implies that the data is missing/NA, 
-
-```{r other_observatioins}
-
-```
-
+|  While going through the dataset, there were several common data entry errors we noticed. For instance, a quotation mark (") means that the entry is the same as the row above, a dash (-) implies that the data is missing/NA, and a question mark (?) refers to an entry that could not be easily interpreted from the handwriting in the original data sheet.  
                          
 # Specific Column Problems
 ## Wind Direction at Time of Observation (wind_dir_tobs) 
 |  To check for any errors within the wind direction column, the unique function was used to show all unique entries within the column. This resulted in a list that contained variations on how the directions were inputted as capitalization changes would result in a unique entry. Most of these were able to be resolved using code as we could input all the variations and spelling errors and say what it needed to be. This leaves four data entries where the entry is uncertain and will need to be checked.
-  
 
 ```{r wind_dir_tobs}
 wth_data <- read_csv("../data/processed\\imported_weather_data_1893-1940.csv")
@@ -157,7 +152,7 @@ wth_data %>% filter(wind_dir_tobs == "?" | wind_dir_tobs == "NE; N?")
 
 
 # Wind Direction for the Day (wind_dir_day)
-|   The column for wind direction for the day was evaluated for errors and some problems were encountered. Though the instructions only called for one direction, many entries have two or more wind directions for the single day. Also, it seems that on some data sheets the only wind direction recorded for the day was in the Wind Direction at Time of Observation column, and the Wind Direction for the Day column includes extra notes related to the State of Weather column by including entries such as snow, thunderstorm, misting, ect. This is a problem that will need to be corrected.
+|   The column for wind direction for the day was evaluated for errors by using the unique function again and some problems were encountered. Though the instructions only called for one direction, many entries have two or more wind directions for the single day. Also, it seems that on some data sheets the only wind direction recorded for the day was in the Wind Direction at Time of Observation column, and the Wind Direction for the Day column includes extra notes related to the State of Weather column by including entries such as snow, thunderstorm, misting, ect. This is a problem that will need to be corrected.
 
 ```{r wind_dir_day}
 wind_dir <- wth_data %>% 
@@ -178,7 +173,7 @@ filter(weather_state_tobs == "Pt????" | weather_state_tobs == "?")
 
 
 ## Weather State for the Day (weather_state_day)
-|   There were 49 factors of this variable in the final data set. The original instructions call for only using Cloudy, Partly cloudy, and Clear for the state of the weather. Several of the unique values were just misspellings of one of these three factors. There are several other factors that describe the state of the weather but do not fall under one of the three categories. There are also multiple entries that classify how Partly Cloudy the weather is in different fractions.
+|   There were 49 factors of this variable in the final data set. The original instructions call for only using Cloudy, Partly cloudy, and Clear for the state of the weather. Several of the unique values were just misspellings of one of these three factors. There are several other factors that describe the state of the weather but do not fall under one of the three categories. There are also multiple entries that classify how Partly Cloudy the weather is in different fractions. The misspellings were corrected, but we were unsure how the library would want the extra data types to be handled.
 ```{r weather_state_day, echo=FALSE}
 bad_states <- wth_data %>% 
   select(weather_state_day) %>%
@@ -197,8 +192,8 @@ wth_data[wth_data$weather_state_day %in% c("PartlyCloudy","Partley Cloudy","Parl
 
 
 ## Maximum and Minimum Temperature (temp_maximum and temp_minimum)
-|  When evaluating the minimum and maximum temperature the data frame was first checked for NA values, which resulted 191 observations. These were checked against the original documents, and the majority were the result of missing values in the original data set. However, the months of May through August in 1929 were not recorded at all and will need to be filled in.
-Additionally, the data frame was check to see if any observations had recorded values where the minimum temperature for the day was greater than the maximum temperature for the day. There are 27 observations that fit this, and after some further evaluation, some are the result of errors in the original data set and others from misreading the documents. It is recommended that these are examined individually to determine the proper action needed.
+|   When evaluating the minimum and maximum temperature the data frame was first checked for NA values, which resulted 191 observations. These were checked against the original documents, and the majority were the result of missing values in the original data set. However, the months of May through August in 1929 were not recorded at all and will need to be filled in.
+|   Additionally, the data frame was check to see if any observations had recorded values where the minimum temperature for the day was greater than the maximum temperature for the day. There are 27 observations that fit this, and after some further evaluation, some are the result of errors in the original data set and others from misreading the documents. It is recommended that these are examined individually to determine the proper action needed.
 
 ```{r temp}
 na_temp <- wth_data %>% 
@@ -222,7 +217,7 @@ wrong_range %>%
 
 
 # Precipitation Amount (precip_amount)
-|  There are six values found that were likely transcribed incorrectly from the original data sheet. Four of the highest values simply need a decimal placed before the first number to make them correct. The fifth and sixth incorrect values, which are the next highest ones in ranking order, are difficult to interpret from the original handwriting. However, these values are not correct when compared to the monthly totals that are listed. It may also be worthwhile to import the monthly totals entered in the data sheets and compare them to the calculated totals from each entry for each respective month, which would help ensure that there are no other mistyped data entries that are not as easily noticeable.
+|  The precipitation data was evaluated by selecting all days with rainfall and arranging them from largest to smallest to detect unreasonable precipitation amounts. There are six values found that were likely transcribed incorrectly from the original data sheet. Four of the highest values simply need a decimal placed before the first number to make them correct. The fifth and sixth incorrect values, which are the next highest ones in ranking order, are difficult to interpret from the original handwriting. However, these values are not correct when compared to the monthly totals that are listed. It may also be worthwhile to import the monthly totals entered in the data sheets and compare them to the calculated totals from each entry for each respective month, which would help ensure that there are no other mistyped data entries that are not as easily noticeable.
 
 ```{r precip_amount}
 precip <- wth_data %>% 
@@ -244,7 +239,7 @@ wth_data %>%
 
 
 ## Snowfall in Inches (precip_snowfall_in_inches)
-|  There does not appear to be any noticeable problems in this column.
+|  Through creating a plot and list of all values, there does not appear to be any noticeable problems in this column since all entries are logical snowfall amounts.
 
 ```{r precip_snowfall_in_inches}
 wth_data %>% 
@@ -260,9 +255,8 @@ snow <- wth_data %>%
 
 
 ## Snow Depth at Time of Observation (precip_snow_depth_tobs)
-|  All values in this column seem to be reasonable amounts.
+|  Similarly, all of this entries seem to be correct based on plotting and creating a list of all values. 
 ```{r precip_snow_depth_tobs}
-
 wth_data %>% 
   ggplot()+
   geom_line(aes(x = date, y = precip_snow_depth_tobs))
@@ -271,7 +265,6 @@ snow <- wth_data %>%
   select(date, precip_snow_depth_tobs) %>% 
   drop_na() %>% 
   arrange(desc(precip_snow_depth_tobs))
-
 ```
 
 
