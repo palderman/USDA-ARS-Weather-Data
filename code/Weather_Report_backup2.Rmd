@@ -142,7 +142,7 @@ sanitize_month <- function(month){
 ## Wind Direction at Time of Observation (wind_dir_tobs) 
 |  To check for any errors within the wind direction column, the unique function was used to show all unique entries within the column. This resulted in a list that contained variations on how the directions were inputted as capitalization changes would result in a unique entry. Most of these were able to be resolved using code as we could input all the variations and spelling errors and say what it needed to be. This leaves four data entries where the entry is uncertain and will need to be checked.
 
-```{r wind_dir_tobs}
+```{r wind_dir_tobs, eval=FALSE, include=FALSE}
 wth_data <- read_csv("../data/processed\\imported_weather_data_1893-1940.csv")
 
 unique_wind_dir <- unique(wth_data$wind_dir_tobs)
@@ -154,7 +154,7 @@ wth_data %>% filter(wind_dir_tobs == "?" | wind_dir_tobs == "NE; N?")
 # Wind Direction for the Day (wind_dir_day)
 |   The column for wind direction for the day was evaluated for errors by using the unique function again and some problems were encountered. Though the instructions only called for one direction, many entries have two or more wind directions for the single day. Also, it seems that on some data sheets the only wind direction recorded for the day was in the Wind Direction at Time of Observation column, and the Wind Direction for the Day column includes extra notes related to the State of Weather column by including entries such as snow, thunderstorm, misting, ect. This is a problem that will need to be corrected.
 
-```{r wind_dir_day}
+```{r wind_dir_day, eval=FALSE, include=FALSE}
 wind_dir <- wth_data %>% 
   select(wind_dir_day) %>% 
   unique()
@@ -164,7 +164,7 @@ wind_dir <- wth_data %>%
 # Weather State at Time of Observation (weather_state_tobs)
 |  Similarly to the the wind direction, there are several errors within the weather state due to either misspelling or different ways of entering the same data entry. A similar code will need to be developed for the spelling errors identified within in this column. There are seven data entries containing question marks indicating the value is uncertain and will need to be manually checked.
 
-```{r weather_state_tobs}
+```{r weather_state_tobs, eval=FALSE, include=FALSE}
 unique_weather <- unique(wth_data$weather_state_tobs) 
 
 wth_data %>% 
@@ -173,8 +173,13 @@ filter(weather_state_tobs == "Pt????" | weather_state_tobs == "?")
 
 
 ## Weather State for the Day (weather_state_day)
+<<<<<<< HEAD
 |   There were 49 factors of this variable in the final data set. The original instructions call for only using Cloudy, Partly cloudy, and Clear for the state of the weather. Several of the unique values were just misspellings of one of these three factors. There are several other factors that describe the state of the weather but do not fall under one of the three categories. There are also multiple entries that classify how Partly Cloudy the weather is in different fractions. The misspellings were corrected, but we were unsure how the library would want the extra data types to be handled.
 ```{r weather_state_day, echo=FALSE}
+=======
+|   There were 49 factors of this variable in the final data set. The original instructions call for only using Cloudy, Partly cloudy, and Clear for the state of the weather. Several of the unique values were just misspellings of one of these three factors. There are several other factors that describe the state of the weather but do not fall under one of the three categories. There are also multiple entries that classify how Partly Cloudy the weather is in different fractions.
+```{r weather_state_day, eval=FALSE, include=FALSE}
+>>>>>>> 84c840181af3b12a82465ba3201f3f6b1759fa42
 bad_states <- wth_data %>% 
   select(weather_state_day) %>%
   unique() 
@@ -195,7 +200,7 @@ wth_data[wth_data$weather_state_day %in% c("PartlyCloudy","Partley Cloudy","Parl
 |   When evaluating the minimum and maximum temperature the data frame was first checked for NA values, which resulted 191 observations. These were checked against the original documents, and the majority were the result of missing values in the original data set. However, the months of May through August in 1929 were not recorded at all and will need to be filled in.
 |   Additionally, the data frame was check to see if any observations had recorded values where the minimum temperature for the day was greater than the maximum temperature for the day. There are 27 observations that fit this, and after some further evaluation, some are the result of errors in the original data set and others from misreading the documents. It is recommended that these are examined individually to determine the proper action needed.
 
-```{r temp}
+```{r temp, eval=FALSE, include=FALSE}
 na_temp <- wth_data %>% 
   filter(is.na(temp_maximum), is.na(temp_minimum))
 ```
@@ -204,7 +209,7 @@ na_temp <- wth_data %>%
 # Temperature Range for the Day (temp_range)
 |  To check the temperature range column, the dataframe was filtered to include any observations where the range did not equal the maximum minus the minimum temperature. A total of 4340 observations fit this description. No further cleaning was done for this as the error could occur within any of the three columns.
 
-```{r temp_range}
+```{r temp_range, eval=FALSE, include=FALSE}
 wrong_range <- wth_data %>% 
   filter(temp_range != temp_maximum - temp_minimum) %>% 
   mutate(diff =(temp_maximum - temp_minimum)-temp_range) %>% 
@@ -219,7 +224,7 @@ wrong_range %>%
 # Precipitation Amount (precip_amount)
 |  The precipitation data was evaluated by selecting all days with rainfall and arranging them from largest to smallest to detect unreasonable precipitation amounts. There are six values found that were likely transcribed incorrectly from the original data sheet. Four of the highest values simply need a decimal placed before the first number to make them correct. The fifth and sixth incorrect values, which are the next highest ones in ranking order, are difficult to interpret from the original handwriting. However, these values are not correct when compared to the monthly totals that are listed. It may also be worthwhile to import the monthly totals entered in the data sheets and compare them to the calculated totals from each entry for each respective month, which would help ensure that there are no other mistyped data entries that are not as easily noticeable.
 
-```{r precip_amount}
+```{r precip_amount, eval=FALSE, include=FALSE}
 precip <- wth_data %>% 
   select(date, precip_amount) %>% 
   drop_na() %>% 
@@ -241,7 +246,7 @@ wth_data %>%
 ## Snowfall in Inches (precip_snowfall_in_inches)
 |  Through creating a plot and list of all values, there does not appear to be any noticeable problems in this column since all entries are logical snowfall amounts.
 
-```{r precip_snowfall_in_inches}
+```{r precip_snowfall_in_inches, eval=FALSE, include=FALSE}
 wth_data %>% 
   ggplot()+
   geom_line(aes(x = date, y = precip_snowfall_in_inches))
@@ -255,8 +260,14 @@ snow <- wth_data %>%
 
 
 ## Snow Depth at Time of Observation (precip_snow_depth_tobs)
+<<<<<<< HEAD
 |  Similarly, all of this entries seem to be correct based on plotting and creating a list of all values. 
 ```{r precip_snow_depth_tobs}
+=======
+|  All values in this column seem to be reasonable amounts.
+```{r precip_snow_depth_tobs, eval=FALSE, include=FALSE}
+
+>>>>>>> 84c840181af3b12a82465ba3201f3f6b1759fa42
 wth_data %>% 
   ggplot()+
   geom_line(aes(x = date, y = precip_snow_depth_tobs))
