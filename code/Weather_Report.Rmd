@@ -115,7 +115,7 @@ sanitize_wind_dir <- function(wind_dir){
                                                 "Souh" = "S",
                                                 "NR" = "NE"))
 wth_data %>% filter(wind_dir_tobs == "?" | wind_dir_tobs == "NE; N?")
-
+}
 ```
 
 
